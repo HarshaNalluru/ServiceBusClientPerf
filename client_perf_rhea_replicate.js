@@ -46,7 +46,7 @@ async function RunTest(maxInflight, messages) {
       }
   });    
   let promises = [];
-
+  
   for (let i = 0; i < maxInflight; i++ ) {
     let promise = ExecuteSendsAsync(sender, messages);
     promises[i] = promise;
@@ -59,9 +59,15 @@ async function RunTest(maxInflight, messages) {
 
 async function ExecuteSendsAsync(sender, messages) {
   while (++_messages <= messages) {
-    await sender.send({ body: _payload });
+    // await sender.send({ body: _payload });
+    while (!sender.sendable()) {
+      await delay(0.01);
+    }
+    if (sender.sendable()) {
+      await sender.send({ body: _payload });
+    }
   }
-
+  
   // Undo last increment, since a message was never sent on the final loop iteration
   _messages--;
 }
